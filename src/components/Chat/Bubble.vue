@@ -1,22 +1,31 @@
 <template>
-
-    <div class="chat-bubble">
-        <div className="row no-gutters">
-            <div className="col-md-6 offset-6">
-                <div className="chat-bubble out d-flex justify-content-between align-items-center">
-                    <p>chat content</p>
-                    <small>
-                        11.31
-                    </small>
-                </div>
-            </div>
+    <div 
+        class="col-md-6"
+        :class="{'offset-6' : message.sender === this.userId}"
+    >
+        <div 
+            class="chat-bubble d-flex justify-content-between align-items-center" 
+            :class="{'out' : message.sender === this.userId,'in' : message.sender !== this.userId}"
+        >
+            <p>{{message.message}}</p>
         </div>
     </div>
 </template>
 
+<script>
+export default {
+    name : 'bubble',
+    props : ['message'],
+    data(){
+        return { 
+            userId : localStorage.getItem('userId')
+        }
+    }
+}
+</script>
+
 <style scoped>
     .chat-bubble{
-        background: #eee;
         max-width: 400px;
         border-radius: 9px;
         padding: 9px 14px;

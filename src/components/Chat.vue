@@ -15,6 +15,8 @@
                             <div class="col-7">
                                 <ChatContent
                                     v-bind:activeChatFriend="activeChatFriend"
+                                    v-bind:chatMessages="chatMessages"
+                                    v-on:send-message="sendMessage"
                                 />
                             </div>
                         </div>
@@ -29,6 +31,7 @@
 import Friendlist from './Chat/Friendlist'
 import Users from '../Users'
 import ChatContent from './Chat/ChatContent'
+import fire from '../fire'
 
 const users = Users
 
@@ -36,7 +39,7 @@ export default {
     name : "chat",
     components : {
         Friendlist,
-        ChatContent      
+        ChatContent
     },
     data(){
         return {
@@ -48,14 +51,16 @@ export default {
             }),
             friends : users.filter(user=>{
                 user.isActiveChat = false
-                console.log(user)
                 return user.id != localStorage.getItem('userId')    
             }),
-            activeChatFriend : null
+            activeChatFriend : null,
+            chatMessages : null,
+            chatId : null
         }
     },
     methods : {
         setActiveChat(friendParams){
+            const userId = localStorage.getItem('userId')
             this.friends.filter(friend=>{
                 if(friend.id == friendParams.id) {
                     this.activeChatFriend = friend
@@ -64,6 +69,36 @@ export default {
                     friend.isActiveChat = false
                 }
                 return friend
+            })
+            const friend = this.activeChatFriend
+
+            if(userId < friend.id){
+                this.chatId  = userId+"_"+friend.id
+            }else{
+                this.chatId  = friend.id+"_"+userId
+            }
+            // Ambil data chat nya nanti simpen ke chatMessages
+            const ref = fire.database().ref('chats/'+this.chatId)
+            ref.on('value',(data)=>{
+                const messages = data.val()
+                let newMessages = []
+                for(const message in messages){
+                    messages[message]['id'] = message
+                    newMessages.push(messages[message])
+                }
+                this.chatMessages = newMessages
+                setTimeout(()=>{
+                    document.getElementById('chat-content').scrollTop =  document.getElementById('chat-content').scrollHeight
+                },30)
+            })
+        },
+        sendMessage(message) {
+            const chatId    = this.chatId
+
+            fire.database().ref('chats/'+chatId).push({
+                timestamps : new Date().toString(),
+                message : message,
+                sender : this.userId
             })
         }
     }

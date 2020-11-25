@@ -7,14 +7,14 @@
                     <h6 class="ml-2"> {{activeChatFriend.name}} </h6>
                 </div>
             </div>
-            <div class="col-12 chat-content">
-                
+            <div class="col-12 chat-content" id="chat-content">
+                <Bubble :key="message.id" :message="message" v-for="message in chatMessages"/>
             </div>
             <div class="message-box">
-                <form class="d-flex align-items-center mt-2 mb-2">
+                <form class="d-flex align-items-center mt-2 mb-2" @submit="sendMessage" id="form-send-message">
                     <i class="fa fa-smile icon-button hover-blue ml-2"></i>
-                        <input type="text" class="ml-2 mr-2 form-control">
-                    <i class="fa fa-paper-plane icon-button hover-blue mr-2"></i>
+                        <input type="text" autocomplete="off" id="input-message" class="ml-2 mr-2 form-control">
+                    <i class="fa fa-paper-plane icon-button hover-blue mr-2" @click="sendMessage"></i>
                 </form>
             </div>
         </div>
@@ -22,9 +22,23 @@
 </template>
 
 <script>
+
+import Bubble from './Bubble'
 export default {
     name:"ChatContent",
-    props : ['activeChatFriend']
+    props : ['activeChatFriend','chatMessages'],
+    components : {
+        Bubble
+    },
+    methods:{
+        sendMessage(e){
+            e.preventDefault()
+            const inputMessage = document.getElementById('input-message')
+            const message = inputMessage.value
+            inputMessage.value = ""
+            this.$emit('send-message',message)
+        }
+    }
 }
 </script>
 
@@ -33,8 +47,11 @@ export default {
         cursor: pointer;
     }
     .chat-content{
-        height: 650px;
-        /* position:relative; */
+        height: 600px;
+        max-height: 650px;
+        overflow: scroll;
+        position:relative;
+        margin-bottom: 50px;
         background-image: url('https://mir-s3-cdn-cf.behance.net/project_modules/disp/2d9dd173426833.5c08f5634ff45.png');
     }
     .message-box{
